@@ -44,7 +44,7 @@
           <span class="nav-badge" id="navActivityCount">0</span>
         </button>
         <div class="nav-label nav-label-row"><span class="nav-label-text">CHECKLISTS</span>
-          <button class="icon-btn-ghost sm" id="newListBtn" aria-label="New checklist" title="New checklist"><i data-lucide="plus"></i></button>
+          <button class="icon-btn-ghost sm new-list-btn" id="newListBtn" aria-label="New checklist" title="New checklist"><i data-lucide="plus"></i><span class="new-list-text">Add New</span></button>
         </div>
         <div id="sideLists" class="side-lists"></div>
         <div class="side-pager hidden" id="sidePager">
@@ -100,7 +100,7 @@
           <div>
             <div class="eyebrow"><i data-lucide="building-2"></i>WORKSPACE · CHECKLISTS</div>
             <h1 id="viewTitle">Checklists overview</h1>
-            <p class="sub as-label" id="viewSub">All your lists at a glance. Create a checklist for anything, track progress, and share any list as a standalone page.</p>
+            <!-- <p class="sub as-label" id="viewSub">All your lists at a glance. Create a checklist for anything, track progress, and share any list as a standalone page.</p> -->
           </div>
         </div>
 
@@ -194,6 +194,10 @@
       </div><!-- /view-overview -->
 
       <div class="view hidden" id="view-checklist">
+        <div class="desc-block" id="listDescBlock">
+          <span id="listDescText"></span>
+          <button class="link-btn" id="editListDescBtn">Edit details</button>
+        </div>
         <div class="cl-bar panel">
           <i data-lucide="clipboard-list"></i>
           <select class="select cl-select" id="checklistSel" aria-label="Active checklist"></select>
@@ -205,10 +209,6 @@
             <button class="btn sm danger" id="deleteListBtn"><i data-lucide="trash-2"></i>Delete</button>
           </div>
           <input type="file" id="importFile" accept=".txt,.csv" class="hidden" />
-        </div>
-        <div class="desc-block" id="listDescBlock">
-          <span id="listDescText"></span>
-          <button class="link-btn" id="editListDescBtn">Edit details</button>
         </div>
         <!-- Checklist panel -->
         <section class="panel" aria-label="Checklist">
@@ -392,6 +392,8 @@
           <span>Press <kbd>/</kbd> to search · <kbd>[</kbd> sidebar · <kbd>Esc</kbd> to close</span>
           <span class="dot"></span>
           <span data-version>v2.0.0</span>
+          <span class="dot"></span>
+          <span>Powered by : <a href="https://sagarmalla.info.np" target="_blank" rel="noopener noreferrer">Sagar Malla</a></span>
         </footer>
       </main>
     </div>
@@ -535,6 +537,20 @@
       <div class="modal-foot">
         <button class="btn ghost" data-close="deleteListModal">Keep it</button>
         <button class="btn danger" id="confirmDeleteList"><i data-lucide="trash-2"></i>Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete task / subtask modal -->
+  <div class="modal-back" id="deleteItemModal" role="dialog" aria-modal="true" aria-labelledby="deleteItemTitle">
+    <div class="modal">
+      <div class="modal-head"><h3><i data-lucide="triangle-alert"></i><span id="deleteItemTitle">Delete task?</span></h3></div>
+      <div class="modal-body">
+        <p style="font-size:13.5px;color:var(--fg-muted)" id="deleteItemDesc">This removes the task and its progress from this browser. This cannot be undone.</p>
+      </div>
+      <div class="modal-foot">
+        <button class="btn ghost" data-close="deleteItemModal">Keep it</button>
+        <button class="btn danger" id="confirmDeleteItem"><i data-lucide="trash-2"></i>Delete</button>
       </div>
     </div>
   </div>

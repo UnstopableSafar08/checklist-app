@@ -53,6 +53,8 @@
     '.cbx:checked{background:var(--ok);border-color:var(--ok)}',
     '.cbx:checked::after{content:"";width:11px;height:11px;background:#fff;clip-path:polygon(14% 44%,0 65%,50% 100%,100% 16%,80% 0%,43% 62%)}',
     '.t{font-size:13.8px;font-weight:600;line-height:1.45;word-break:break-word;cursor:pointer}',
+    '.task-id{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;font-weight:500;color:var(--mut);word-break:break-all}',
+    '.task-time{font-size:11.5px;font-weight:500;color:var(--mut);white-space:nowrap}',
     '.row.done .t{color:var(--mut);text-decoration:line-through}',
     '.pill{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:999px;border:1px solid var(--line);color:var(--mut);white-space:nowrap}',
     '.pill.done{color:var(--ok);border-color:currentColor}',
@@ -89,6 +91,8 @@
     '.addrow{display:flex;gap:8px;padding:12px}.addrow input{flex:1}',
     '.empty{padding:36px 20px;text-align:center;color:var(--mut)}',
     '.foot{margin-top:14px;font-size:12px;color:var(--mut);display:flex;gap:8px;flex-wrap:wrap}',
+    '.foot a{color:var(--acc);text-decoration:none}',
+    '.foot a:hover{text-decoration:underline}',
     '.toast{position:fixed;bottom:18px;right:18px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:11px 14px;font-size:13px;box-shadow:0 12px 32px rgba(0,0,0,.25);z-index:9}',
     '@media print{.toolbar,.addrow,.iconbtn,.toast{display:none}.wrap{max-width:100%}}'
   ].join("\n");
@@ -119,6 +123,7 @@
     "function done(id){return !!store.checked[id]}",
     "function effd(r){return done(r.id)}",
     "function setd(id,v){if(v)store.checked[id]=true;else delete store.checked[id]}",
+    "function fmtt(ts){try{if(!ts)return '';var d=new Date(ts);return d.toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}catch(e){return ''}}",
     "var HLQ=String.fromCharCode(39);",
     "function hlSp(cls,txt){return '<span class='+HLQ+'tok-'+cls+HLQ+'>'+esc(txt)+'</span>'}",
     "var HLW={js:'await async break case catch class const continue debugger default delete do else export extends finally for function if import in instanceof let new return static super switch this throw try typeof var void while with yield of from as get set null undefined true false NaN Infinity',ts:'await async break case catch class const continue debugger default delete do else export extends finally for function if import in instanceof let new return static super switch this throw try typeof var void while with yield of from as get set interface type enum implements private public protected readonly abstract namespace declare module null undefined true false',py:'and as assert async await break class continue def del elif else except finally for from global if import in is lambda nonlocal not or pass raise return try while with yield None True False self',sh:'if then elif else fi for while until do done case esac function select in time coproc export readonly local declare typeset echo printf cd exit return shift source alias unalias test sudo',sql:'select from where group by order having limit offset join left right full inner outer cross on as and or not null in is like ilike between exists union all distinct insert into values update set delete create table alter drop index view primary key foreign references default check unique constraint into',json:'true false null',css:'color background border margin padding display flex grid position top left right bottom width height font size weight family style text align justify content items self overflow opacity transform transition animation shadow radius cursor import media charset supports keyframes face page layer container block inline none relative absolute fixed sticky',yaml:'true false null yes no on off'};",
@@ -147,19 +152,19 @@
     "function visible(){var rows=all().map(function(r){return {id:r.id,title:r.title,desc:r.desc||'',tags:r.tags||[],createdAt:r.createdAt,subs:(r.subs||[]).filter(function(s){return svis(s)})}});",
     "rows=rows.filter(function(r){var d=effd(r);var self=(filter===\"all\"||(filter===\"active\"?!d:d))&&matchQ(r,q);return self||r.subs.length>0});",
     "return sorted(rows);}",
-    "function subHTML(s,pid){var d=done(s.id);",
+    "function subHTML(s,pid,si){var d=done(s.id);var tm=fmtt(s.createdAt);var n=(typeof si===\"number\"?si:0)+1;",
     "return \"<li class='sub\"+(d?\" done\":\"\")+\"' data-id='\"+esc(s.id)+\"' data-pid='\"+esc(pid)+\"'>\"+",
-    "\"<input class='cbx' type='checkbox'\"+(d?\" checked\":\"\")+\" aria-label='\"+esc(s.title)+\"'>\"+",
-    "\"<div class='submain'><div class='title-row'><span class='t'>\"+esc(s.title)+\"</span>\"+tagsHTML(s.tags)+\"</div>\"+(s.desc?\"<div class='sdesc'>\"+rich(s.desc)+\"</div>\":\"\")+\"</div>\"+",
+    "\"<input class='cbx' type='checkbox'\"+(d?\" checked\":\"\")+\" aria-label='\"+esc(\"#\"+n+\" - \"+s.title)+\"'>\"+",
+    "\"<div class='submain'><div class='title-row'><span class='t'><span class='task-id'>#\"+n+\"</span> - \"+esc(s.title)+\"</span>\"+tagsHTML(s.tags)+(tm?\"<span class='task-time'>\"+esc(tm)+\"</span>\":\"\")+\"</div>\"+(s.desc?\"<div class='sdesc'>\"+rich(s.desc)+\"</div>\":\"\")+\"</div>\"+",
     "\"<div class='side'><button class='mini' data-sdel='1' title='Delete'>&#10005;</button></div></li>\"}",
-    "function rowHTML(r,idx){var d=effd(r);var subs=r.subs||[];var dn=subs.filter(function(s){return done(s.id)}).length;",
-    "var open=!shut[r.id]||q||addingTo===r.id;var inner=subs.map(function(s){return subHTML(s,r.id)}).join(\"\");",
+    "function rowHTML(r,idx){var d=effd(r);var subs=r.subs||[];var dn=subs.filter(function(s){return done(s.id)}).length;var tm=fmtt(r.createdAt);",
+    "var open=!shut[r.id]||q||addingTo===r.id;var inner=subs.map(function(s,si){return subHTML(s,r.id,si)}).join(\"\");",
     "if(addingTo===r.id){inner+=\"<li class='subaddrow'><input id='subInput' class='txt' maxlength='200' placeholder='Type subtask, Enter to add, Esc to cancel'></li>\"}",
     "var sublist=((subs.length&&open)||addingTo===r.id)?\"<ul class='subs'>\"+inner+\"</ul>\":\"\";",
     "return \"<li class='row\"+(d?\" done\":\"\")+\"' data-id='\"+esc(r.id)+\"'>\"+",
     "\"<div class='row-check'><button class='expander\"+(subs.length?\"\":\" off\")+((subs.length&&shut[r.id]&&!q)?\" closed\":\"\")+\"' data-exp='1' title='Toggle subtasks'>&#9662;</button>\"+",
-    "\"<input class='cbx' type='checkbox'\"+(d?\" checked\":\"\")+\" aria-label='\"+esc(r.title)+\" (independent)'>\"+\"</div>\"+",
-    "\"<div class='submain'><div class='title-row'><span class='t'>\"+esc(r.title)+\"</span>\"+tagsHTML(r.tags)+\"</div>\"+(r.desc?\"<div class='sdesc'>\"+rich(r.desc)+\"</div>\":\"\")+\"<div class='meta'>#\"+(idx+1)+(subs.length?\" · \"+dn+\"/\"+subs.length+\" subs · parent separate\":\"\")+\"</div>\"+sublist+\"</div>\"+",
+    "\"<input class='cbx' type='checkbox'\"+(d?\" checked\":\"\")+\" aria-label='\"+esc(\"#\"+(idx+1)+\" - \"+r.title)+\" (independent)'>\"+\"</div>\"+",
+    "\"<div class='submain'><div class='title-row'><span class='t'><span class='task-id'>#\"+(idx+1)+\"</span> - \"+esc(r.title)+\"</span>\"+tagsHTML(r.tags)+(tm?\"<span class='task-time'>\"+esc(tm)+\"</span>\":\"\")+\"</div>\"+(r.desc?\"<div class='sdesc'>\"+rich(r.desc)+\"</div>\":\"\")+(subs.length?\"<div class='meta'>\"+dn+\"/\"+subs.length+\" subs · parent separate</div>\":\"\")+sublist+\"</div>\"+",
     "\"<div class='side'><span class='pill\"+(d?\" done\":\"\")+\"'>\"+(d?\"done\":\"pending\")+\"</span>\"+",
     "\"<button class='mini' data-addsub='1' title='Add subtask'>+</button>\"+",
     "\"<button class='mini' data-del='1' title='Delete'>&#10005;</button></div></li>\"}",
@@ -315,7 +320,7 @@
       "    <div class=\"addrow\"><input class=\"txt\" id=\"newItem\" type=\"text\" placeholder=\"Add an item...\" maxlength=\"200\"><button class=\"btn\" id=\"addBtn\">" + ICONS.plus + "Add</button></div>\n" +
       "    <ul id=\"list\"></ul>\n" +
       "  </div>\n" +
-      "  <div class=\"foot\"><span id=\"count\"></span><span>·</span><span>Standalone export — no account, no network. Open this file anywhere.</span></div>\n" +
+      "  <div class=\"foot\"><span id=\"count\"></span><span>·</span><span>Standalone export — no account, no network. Open this file anywhere.</span><span>·</span><span>Powered by : <a href=\"https://sagarmalla.info.np\" target=\"_blank\" rel=\"noopener noreferrer\">Sagar Malla</a></span></div>\n" +
       "</div>\n" +
       "<script id=\"cl-data\" type=\"application/json\">\n" + json + "\n" + closeTag + "\n" +
       "<script>\nwindow.__icons={sun:\"" + ICONS.sun.replace(/"/g, "'") + "\",moon:\"" + ICONS.moon.replace(/"/g, "'") + "\"};\n" + APP + "\n" + closeTag + "\n" +

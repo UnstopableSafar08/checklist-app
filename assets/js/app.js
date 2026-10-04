@@ -88,7 +88,9 @@
     }
     document.body.classList.remove("nav-open");
     render();
-    playEntrance();
+    // Instant nav switches: local data is sync, so never show skeleton /
+    // entrance here. Skeleton veils appear only on slow async loads (boot),
+    // and the entrance animation plays once on boot.
     if (!opts || opts.scroll !== false) window.scrollTo(0, 0);
     refreshIcons(document);
   }
@@ -97,6 +99,10 @@
   function shortName(title) {
     const parts = title.split(" - ");
     return parts[0].trim();
+  }
+  function truncTitle(title) {
+    const t = String(title ?? "");
+    return t.length > 60 ? `${t.slice(0, 60)} ...` : t;
   }
   // Rows of the ACTIVE checklist. createdAt drives newest→oldest ordering.
   // Each row may carry nested subtasks: {id, title, createdAt, subs: []}.
@@ -750,10 +756,14 @@
     const slice = state.lists.slice(start, start + C.SIDE_PAGE_SIZE);
     const box = document.getElementById("sideLists");
     if (box) {
+      // The active checklist button shares the .nav-item.active look with
+      // the view nav — highlight it only in the checklist view so landing
+      // on overview shows just Overview as active.
+      const showListActive = state.view === "checklist";
       box.innerHTML = slice
         .map((l) => {
           const pending = l.items.length - listDoneCount(l);
-          return `<button class="nav-item${l.id === state.activeId ? " active" : ""}" data-listid="${esc(l.id)}" title="${esc(l.name)} — ${l.items.length} items">
+          return `<button class="nav-item${showListActive && l.id === state.activeId ? " active" : ""}" data-listid="${esc(l.id)}" title="${esc(l.name)} — ${l.items.length} items">
             <i data-lucide="clipboard-list"></i><span>${esc(l.name)}</span>
             <span class="nav-badge">${pending}</span>
           </button>`;
@@ -817,12 +827,23 @@
     return `<span class="tags">${list.map((t) => `<span class="tag">#${esc(t)}</span>`).join("")}</span>`;
   }
 
-  function subHTML(s, parentId) {
+  function fmtTaskTime(ts) {
+    if (typeof ts !== "number" || !ts) return "";
+    try {
+      const d = new Date(ts);
+      const full = d.toLocaleString();
+      const display = d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+      return `<span class="task-time" title="${esc(full)}">${esc(display)}</span>`;
+    } catch { return ""; }
+  }
+
+  function subHTML(s, parentId, subIdx) {
     const d = isDone(s.id);
+    const n = (typeof subIdx === "number" ? subIdx : 0) + 1;
     return `<li class="sub ${d ? "done" : ""}" data-id="${esc(s.id)}" data-parent="${esc(parentId)}">
-      <input class="cbx" type="checkbox" ${d ? "checked" : ""} aria-label="Complete: ${esc(s.title)}" data-act="subtoggle" />
+      <input class="cbx" type="checkbox" ${d ? "checked" : ""} aria-label="Complete: #${n} - ${esc(s.title)}" data-act="subtoggle" />
       <div class="sub-main">
-        <div class="title-row"><span class="t" data-act="subtoggle-label" role="button" tabindex="0" title="Click to toggle this subtask only">${esc(s.title)}</span>${tagsHTML(s.tags)}</div>
+        <div class="title-row"><span class="t" data-act="subtoggle-label" role="button" tabindex="0" title="${esc(s.title)} (Click to toggle this subtask only)"><span class="task-id mono">#${n}</span><span class="task-sep"> - </span>${esc(truncTitle(s.title))}</span>${tagsHTML(s.tags)}${fmtTaskTime(s.createdAt)}</div>
         ${s.description ? `<div class="desc" data-act="desctoggle" title="Click to expand / collapse">${renderRich(s.description)}</div>` : ""}
       </div>
       <span class="row-actions">
@@ -841,23 +862,21 @@
     const collapsed = state.collapsed.has(r.id);
     const expanded = !collapsed || state.query.trim().length > 0;
     const subList = subs.length && expanded
-      ? `<ul class="subs">${subs.map((s) => subHTML(s, r.id)).join("")}</ul>` : "";
+      ? `<ul class="subs">${subs.map((s, si) => subHTML(s, r.id, si)).join("")}</ul>` : "";
     return `
       <li class="row ${checked ? "done" : ""}" data-id="${esc(r.id)}" data-title="${esc(r.title)}">
         <div class="row-check">
           <button class="expander${allSubs.length ? "" : " hidden"}${collapsed && allSubs.length ? " closed" : ""}" data-act="exp" title="${allSubs.length ? (expanded ? "Collapse subtasks" : "Expand subtasks") : "No subtasks"}" aria-label="Toggle subtasks" aria-expanded="${expanded}"><i data-lucide="chevron-down"></i></button>
-          <input class="cbx" type="checkbox" ${checked ? "checked" : ""} aria-label="Complete: ${esc(r.title)} (independent of subtasks)" data-act="toggle" />
+          <input class="cbx" type="checkbox" ${checked ? "checked" : ""} aria-label="Complete: #${idx + 1} - ${esc(r.title)} (independent of subtasks)" data-act="toggle" />
         </div>
         <div class="row-main">
-          <div class="title-row"><span class="title" data-act="toggle-label" role="button" tabindex="0" title="Click to toggle this task only (subtasks stay independent)">${esc(r.title)}</span>${tagsHTML(r.tags)}</div>
+          <div class="title-row"><span class="title" data-act="toggle-label" role="button" tabindex="0" title="${esc(r.title)} (Click to toggle this task only, subtasks stay independent)"><span class="task-id mono">#${idx + 1}</span><span class="task-sep"> - </span>${esc(truncTitle(r.title))}</span>${tagsHTML(r.tags)}</div>
           ${r.description ? `<div class="desc" data-act="desctoggle" title="Click to expand / collapse">${renderRich(r.description)}</div>` : ""}
-          <div class="meta">
-            <span class="chip">#${String(idx + 1).padStart(2, "0")}</span>
-            ${allSubs.length ? `<span class="chip subcount" title="Parent is independent — ${doneSubs} of ${allSubs.length} subtasks done">${doneSubs}/${allSubs.length} subs · parent separate</span>` : ""}
-          </div>
+          ${allSubs.length ? `<div class="meta"><span class="chip subcount" title="Parent is independent — ${doneSubs} of ${allSubs.length} subtasks done">${doneSubs}/${allSubs.length} subs · parent separate</span></div>` : ""}
           ${subList}
         </div>
         <div class="row-side">
+          ${fmtTaskTime(r.createdAt)}
           <span class="status ${checked ? "done" : "todo"}">${checked ? `<i data-lucide="check-check"></i>done` : `<i data-lucide="clock"></i>pending`}</span>
           <span class="row-actions">
             <button class="mini-btn" data-act="copy" title="Copy item text" aria-label="Copy ${esc(shortName(r.title))}"><i data-lucide="copy"></i></button>
@@ -1079,6 +1098,22 @@
     });
 
     // list delegation (items + subtasks)
+    // Pending task/subtask delete awaiting confirmation in #deleteItemModal.
+    let pendingItemDelete = null;
+    function askDeleteItem(pending) {
+      pendingItemDelete = pending;
+      const titleEl = document.getElementById("deleteItemTitle");
+      const descEl = document.getElementById("deleteItemDesc");
+      if (pending.type === "subtask") {
+        if (titleEl) titleEl.textContent = "Delete subtask?";
+        if (descEl) descEl.innerHTML = `This removes subtask <b>${esc(pending.subTitle)}</b> from <b>${esc(pending.parentTitle)}</b>. This cannot be undone.`;
+      } else {
+        const n = pending.subCount || 0;
+        if (titleEl) titleEl.textContent = "Delete task?";
+        if (descEl) descEl.innerHTML = `This removes <b>${esc(pending.title)}</b>${n ? ` and its <b>${n} subtask${n === 1 ? "" : "s"}</b>` : ""}. This cannot be undone.`;
+      }
+      openModal("deleteItemModal");
+    }
     function findSub(parentId, subId) {
       const p = itemById(parentId);
       return p && Array.isArray(p.subs) ? p.subs.find((s) => s.id === subId) || null : null;
@@ -1129,10 +1164,7 @@
           if (act === "subdel") {
             e.stopPropagation();
             const p = itemById(pid);
-            if (p) p.subs = p.subs.filter((s) => s.id !== sub.id);
-            setDone(sub.id, false);
-            persistAndRender({ kind: "remove", text: `Deleted subtask ${shortName(sub.title)}` });
-            toast("info", "Subtask deleted", shortName(sub.title));
+            askDeleteItem({ type: "subtask", parentId: pid, subId: sub.id, subTitle: sub.title, parentTitle: p ? p.title : "" });
             return;
           }
           if (act === "subtoggle-label") {
@@ -1175,13 +1207,7 @@
         }
         if (act === "del") {
           e.stopPropagation();
-          const l = activeList();
-          if (l) l.items = l.items.filter((it) => it.id !== id);
-          setDone(id, false);
-          (item.subs || []).forEach((s) => setDone(s.id, false));
-          state.collapsed.delete(id);
-          persistAndRender({ kind: "remove", text: `Deleted ${shortName(title)}` });
-          toast("info", "Item deleted", shortName(title));
+          askDeleteItem({ type: "task", taskId: id, title, subCount: (item.subs || []).length });
           return;
         }
         if (act === "toggle-label") {
@@ -1834,6 +1860,32 @@
       render();
       toast("info", "Checklist deleted", l.name);
     });
+    on("confirmDeleteItem", () => {
+      const p = pendingItemDelete;
+      pendingItemDelete = null;
+      if (!p) { closeModal("deleteItemModal"); return; }
+      const l = activeList();
+      if (!l) { closeModal("deleteItemModal"); return; }
+      if (p.type === "subtask") {
+        const parent = l.items.find((it) => it.id === p.parentId) || null;
+        const sub = parent && Array.isArray(parent.subs) ? parent.subs.find((s) => s.id === p.subId) || null : null;
+        if (!parent || !sub) { closeModal("deleteItemModal"); return; }
+        parent.subs = parent.subs.filter((s) => s.id !== sub.id);
+        setDone(sub.id, false);
+        persistAndRender({ kind: "remove", text: `Deleted subtask ${shortName(sub.title)}` });
+        toast("info", "Subtask deleted", shortName(sub.title));
+      } else {
+        const item = l.items.find((it) => it.id === p.taskId) || null;
+        if (!item) { closeModal("deleteItemModal"); return; }
+        l.items = l.items.filter((it) => it.id !== item.id);
+        setDone(item.id, false);
+        (item.subs || []).forEach((s) => setDone(s.id, false));
+        state.collapsed.delete(item.id);
+        persistAndRender({ kind: "remove", text: `Deleted ${shortName(item.title)}` });
+        toast("info", "Item deleted", shortName(item.title));
+      }
+      closeModal("deleteItemModal");
+    });
 
     // ---------- import .txt → new checklist ----------
     // Indented lines (2+ spaces / tab) or "- "/"* " bullets become subtasks.
@@ -2031,9 +2083,14 @@
     // modal close wiring
     $$("[data-close]").forEach((b) => b.addEventListener("click", () => closeModal(b.dataset.close)));
     $$(".modal-back").forEach((m) => m.addEventListener("click", (e) => { if (e.target === m) closeModal(m.id); }));
+    const deleteItemModalEl = document.getElementById("deleteItemModal");
+    if (deleteItemModalEl) deleteItemModalEl.addEventListener("click", (e) => {
+      if (e.target === deleteItemModalEl || (e.target.closest && e.target.closest("[data-close]"))) pendingItemDelete = null;
+    });
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         $$(".modal-back.open").forEach((m) => closeModal(m.id));
+        pendingItemDelete = null;
         document.body.classList.remove("nav-open");
       }
       const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName || "");
@@ -2270,8 +2327,18 @@
 
   // ---------- boot ----------
   async function boot() {
-    // Skeleton veils shimmer while data loads (lifted below before reveal).
-    document.body.classList.add("is-booting");
+    // Dynamic skeleton: shimmer ONLY if the fetch is actually slow.
+    // Fast (cached/local) loads render instantly with no skeleton flash.
+    // Nav clicks never touch this — they render sync local data instantly.
+    const SLOW_MS = 250;
+    let skeletonShown = false;
+    let slowTimer = null;
+    if (!REDUCED_MOTION) {
+      slowTimer = setTimeout(() => {
+        skeletonShown = true;
+        document.body.classList.add("is-booting");
+      }, SLOW_MS);
+    }
     // Sample .txt is reference data: it seeds ONE sample checklist on
     // first run (migrating any legacy single-list progress onto it).
     let seedTitles = [...Store.FALLBACK_ITEMS];
@@ -2279,6 +2346,7 @@
       const live = await Store.loadItems();
       if (live && live.length) seedTitles = [...new Set(live)];
     } catch {}
+    if (slowTimer) clearTimeout(slowTimer);
     const bootData = Store.ensureSeedLists(seedTitles);
     state.lists = bootData.lists;
     state.listState = bootData.state;
@@ -2291,17 +2359,17 @@
     refreshIcons(document);
     render();
     refreshIcons(document);
-    // Boot sequence: fade the full-screen loader, let skeletons shimmer
-    // briefly (min display avoids flicker), then reveal with KPI count-up,
-    // donut fill, row stagger and entrances.
-    await new Promise((r) => setTimeout(r, REDUCED_MOTION ? 0 : 150));
+    // Fade the full-screen loader immediately when data is ready. Only
+    // pause briefly if the skeleton actually showed (avoids flicker).
     document.body.classList.add("boot-done");
     setTimeout(() => {
       const b = document.getElementById("boot");
       if (b) b.remove();
     }, 600);
-    if (!REDUCED_MOTION) await new Promise((r) => setTimeout(r, 600));
+    if (skeletonShown && !REDUCED_MOTION) await new Promise((r) => setTimeout(r, 200));
     document.body.classList.remove("is-booting");
+    // Single celebratory reveal (KPI count-up, donut fill, row stagger,
+    // entrance) — plays once on boot, never on nav clicks.
     state.bootAnim = true;
     render();
     playEntrance();

@@ -58,6 +58,8 @@
   body.side-collapsed .nav-label:not(.nav-label-row) { display: none; }
   body.side-collapsed .nav-label-row { justify-content: center; padding: 10px 0 4px; }
   body.side-collapsed .nav-label-text { display: none; }
+  body.side-collapsed .icon-btn-ghost.new-list-btn { width: 28px; height: 28px; padding: 0; justify-content: center; }
+  body.side-collapsed .icon-btn-ghost.new-list-btn .new-list-text { display: none; }
   body.side-collapsed .nav-item {
     justify-content: center; gap: 0;
     width: 46px; height: 44px; padding: 0; margin: 1px auto;
@@ -95,6 +97,28 @@
 .nav-label-row { display: flex; align-items: center; justify-content: space-between; }
 .icon-btn-ghost.sm { width: 24px; height: 24px; border-radius: 7px; margin: 0; }
 .icon-btn-ghost.sm svg { width: 13px; height: 13px; }
+/* Sidebar "new checklist" CTA — gradient action button that stands out
+   against the dark sidebar, with lift + glow on hover and a visible
+   focus ring. Chained selector beats .icon-btn-ghost.sm on specificity. */
+.icon-btn-ghost.new-list-btn {
+  width: auto; height: 28px; border-radius: 9px; margin: 0; flex: none;
+  display: inline-flex; align-items: center; gap: 6px; padding: 0 10px; cursor: pointer;
+  font-size: 12px; font-weight: 600; white-space: nowrap;
+  background: linear-gradient(135deg, #2563eb, #06b6d4);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.45);
+  transition: transform 0.12s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+.icon-btn-ghost.new-list-btn svg { width: 15px; height: 15px; }
+.icon-btn-ghost.new-list-btn .new-list-text { line-height: 1; }
+.icon-btn-ghost.new-list-btn:hover {
+  filter: brightness(1.12); transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.55);
+  background: linear-gradient(135deg, #2563eb, #06b6d4); color: #fff;
+}
+.icon-btn-ghost.new-list-btn:active { transform: translateY(0) scale(0.96); }
+.icon-btn-ghost.new-list-btn:focus-visible { outline: 2px solid #60a5fa; outline-offset: 2px; }
 .side-lists { padding: 0 12px; display: flex; flex-direction: column; gap: 2px; }
 .side-lists .nav-item span:first-of-type { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .side-pager { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 6px 12px 2px; font-size: 11px; color: var(--sidebar-muted); }
@@ -328,6 +352,10 @@ ul.checklist { list-style: none; margin: 0; padding: 6px; display: flex; flex-di
 }
 .row-main { min-width: 0; }
 .title { font-size: 13.9px; font-weight: 600; line-height: 1.45; word-break: break-word; cursor: pointer; }
+.task-id { font-family: var(--font-mono); font-size: 0.86em; font-weight: 500; color: var(--fg-muted); word-break: break-all; }
+.task-sep { color: var(--fg-faint); font-weight: 400; }
+.task-time { font-size: 11.5px; font-weight: 500; color: var(--fg-faint); white-space: nowrap; }
+.sub .task-time { font-size: 11px; }
 .meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; align-items: center; }
 .chip {
   display: inline-flex; align-items: center; gap: 5px;

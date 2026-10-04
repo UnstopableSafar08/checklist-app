@@ -98,7 +98,7 @@ body.boot-done .boot { opacity: 0; visibility: hidden; pointer-events: none; }
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 .enter > * { animation: rise 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) both; animation-delay: var(--d, 0ms); }
 
-/* ---------- Boot skeleton veils (lifted before first reveal) ---------- */
+/* ---------- Boot skeleton veils (slow-fetch only: JS adds .is-booting after ~250ms) ---------- */
 body.is-booting .kpis,
 body.is-booting .ana-grid,
 body.is-booting ul.checklist,
