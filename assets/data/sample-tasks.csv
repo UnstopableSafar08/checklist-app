@@ -1,0 +1,10 @@
+title,tags,description
+Plan weekly priorities,planning;team,List the top 3 outcomes for the week.
+Review open pull requests,review;urgent,"Leave feedback, then merge.
+```sh
+git fetch origin
+git checkout pr-branch
+```"
+Update project documentation,docs,Add the new endpoints and examples.
+Prepare demo for stakeholders,,Record a 5 min walkthrough.
+"Reply to pending emails, then archive",inbox,Inbox zero before Friday.

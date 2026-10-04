@@ -1,0 +1,28 @@
+# ---> Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# ---> Node (only used for ad-hoc syntax checks, no build step)
+node_modules/
+npm-debug.log*
+
+# ---> OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ---> Logs / temp
+*.log
+*.tmp
+
+# ---> Local standalone exports (if ever saved into the repo)
+*-20[0-9][0-9]-[0-9][0-9]-[0-9][0-9].html
+*-20[0-9][0-9]-[0-9][0-9]-[0-9][0-9].txt

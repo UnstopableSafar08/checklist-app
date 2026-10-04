@@ -1,0 +1,9 @@
+Plan weekly priorities #planning #team
+  Draft outline #planning
+  Share with team
+Review open pull requests #review #urgent
+Update project documentation #docs
+Prepare demo for stakeholders
+  Record walkthrough
+  Book meeting room
+Reply to pending emails #inbox

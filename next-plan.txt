@@ -1,0 +1,1 @@
+add a confirmation modal for task, subtask and checklist deletion button hit.

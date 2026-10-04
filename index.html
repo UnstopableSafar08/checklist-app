@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="theme-color" content="#020617" />
+  <title>Checklists · Workspace</title>
+  <meta name="description" content="A simple, fast checklist app for anything — create multiple checklists, track progress, and export or share each one as a standalone page." />
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg" />
+  <link rel="preload" href="assets/fonts/inter/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="assets/fonts/inter/inter-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="assets/css/main.css" />
+</head>
+<body>
+  <div class="boot" id="boot" aria-hidden="true">
+    <div class="boot-card">
+      <div class="boot-mark"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+      <div class="boot-name">Checklists</div>
+      <div class="boot-bars"><i></i><i></i><i></i></div>
+    </div>
+  </div>
+  <div class="scrim" id="scrim"></div>
+
+  <div class="shell">
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="sidebar" aria-label="Primary navigation">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"><i data-lucide="list-checks"></i></div>
+        <div class="brand-text">
+          <div class="brand-name">Checklists</div>
+          <div class="brand-sub">Workspace <span class="env-pill">PROD</span></div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <div class="nav-label"><span class="nav-label-text">WORKSPACE</span></div>
+        <button class="nav-item active" data-view="overview" title="Overview">
+          <i data-lucide="layout-dashboard"></i><span>Overview</span>
+          <span class="nav-badge" id="navCount">31</span>
+        </button>
+        <button class="nav-item" data-view="activity" title="Activity">
+          <i data-lucide="activity"></i><span>Activity</span>
+          <span class="nav-badge" id="navActivityCount">0</span>
+        </button>
+        <div class="nav-label nav-label-row"><span class="nav-label-text">CHECKLISTS</span>
+          <button class="icon-btn-ghost sm" id="newListBtn" aria-label="New checklist" title="New checklist"><i data-lucide="plus"></i></button>
+        </div>
+        <div id="sideLists" class="side-lists"></div>
+        <div class="side-pager hidden" id="sidePager">
+          <button class="side-page-btn" id="sidePrev" aria-label="Previous checklists">‹</button>
+          <span class="side-page-info" id="sidePageInfo">1/1</span>
+          <button class="side-page-btn" id="sideNext" aria-label="Next checklists">›</button>
+        </div>
+
+        <div class="nav-label"><span class="nav-label-text">SYSTEM</span></div>
+        <button class="nav-item" data-view="settings" title="Settings">
+          <i data-lucide="settings"></i><span>Settings</span>
+        </button>
+        <button class="nav-item" id="shortcutsBtn" title="Shortcuts">
+          <i data-lucide="command"></i><span>Shortcuts</span>
+          <span class="nav-badge">?</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-card">
+        <h4><i data-lucide="shield-check"></i>Progress</h4>
+        <p><span id="sidePct">0% done</span> · stored locally, survives reloads.</p>
+        <div class="mini-bar"><div id="sideMiniBar" style="width:0%"></div></div>
+      </div>
+
+      <div class="sidebar-foot">
+        <div class="avatar" aria-hidden="true">DO</div>
+        <div class="who"><b>DevOps</b><span>on-call · <span data-version>v2.0.0</span></span></div>
+        <button class="icon-btn-ghost" id="themeBtnSide" aria-label="Toggle theme"><i data-lucide="sun"></i></button>
+      </div>
+
+      <button class="rail-toggle" id="railToggle" aria-label="Collapse sidebar" title="Collapse sidebar ( [ )"><i data-lucide="panel-left-close"></i><span>Collapse</span></button>
+    </aside>
+
+    <!-- ============ MAIN ============ -->
+    <div class="main-col">
+      <header class="topbar">
+        <button class="icon-btn" id="menuBtn" aria-label="Open navigation" title="Navigation"><i data-lucide="menu"></i></button>
+        <label class="top-search" for="topSearch">
+          <i data-lucide="search"></i>
+          <input id="topSearch" type="search" placeholder="Search items…" autocomplete="off" />
+          <kbd>⌘K</kbd>
+        </label>
+        <div class="top-actions">
+          <button class="icon-btn" id="themeBtn" aria-label="Toggle theme"><i data-lucide="sun"></i></button>
+          <button class="icon-btn dot" id="bellBtn" aria-label="Notifications"><i data-lucide="bell"></i></button>
+          <div class="avatar-sm" title="DevOps">D</div>
+        </div>
+      </header>
+
+      <main class="content">
+        <!-- Page head -->
+        <div class="page-head">
+          <div>
+            <div class="eyebrow"><i data-lucide="building-2"></i>WORKSPACE · CHECKLISTS</div>
+            <h1 id="viewTitle">Checklists overview</h1>
+            <p class="sub as-label" id="viewSub">All your lists at a glance. Create a checklist for anything, track progress, and share any list as a standalone page.</p>
+          </div>
+        </div>
+
+      <div class="view" id="view-overview">
+        <!-- KPIs -->
+        <section class="kpis" aria-label="Summary statistics">
+          <div class="kpi">
+            <div class="kpi-ico blue"><i data-lucide="database"></i></div>
+            <div><div class="kpi-label">Total items</div><div class="kpi-value" id="statTotal">–</div><div class="kpi-sub" id="kpiTotalSub">–</div></div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-ico green"><i data-lucide="shield-check"></i></div>
+            <div><div class="kpi-label">Done</div><div class="kpi-value" id="statDone">–</div><div class="kpi-sub" id="kpiDoneSub">–</div></div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-ico amber"><i data-lucide="clock"></i></div>
+            <div><div class="kpi-label">Pending</div><div class="kpi-value" id="statPending">–</div><div class="kpi-sub" id="kpiPendingSub">–</div></div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-ico violet"><i data-lucide="zap"></i></div>
+            <div><div class="kpi-label">Completion</div><div class="kpi-value" id="statPct">–</div><div class="kpi-sub">auto-saved locally</div></div>
+          </div>
+        </section>
+
+        <!-- Progress -->
+        <section class="panel panel-pad" aria-label="Progress">
+          <div class="progress-grid">
+            <div>
+              <div class="progress-meta">
+                <span class="progress-pct" id="progressText">0 / 0 done</span>
+              </div>
+              <div class="progress-hint" id="progressHint">–</div>
+              <div class="track" aria-hidden="true"><div id="progressBar" style="width:0%"></div></div>
+            </div>
+            <div class="ring-wrap">
+              <svg class="ring" width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
+                <defs>
+                  <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#2563eb"/><stop offset="1" stop-color="#06b6d4"/>
+                  </linearGradient>
+                </defs>
+                <circle class="ring-bg" cx="32" cy="32" r="26" fill="none" stroke-width="7"/>
+                <circle id="ringFg" class="ring-fg" cx="32" cy="32" r="26" fill="none" stroke-width="7" stroke-dasharray="163.3" stroke-dashoffset="163.3"/>
+              </svg>
+              <div>
+                <div style="font-size:12.5px;font-weight:700">Overall progress</div>
+                <div class="progress-hint">Ring + bar stay in sync</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Analytics -->
+        <section class="panel" aria-label="Analytics">
+          <div class="panel-head">
+            <h3><i data-lucide="chart-pie"></i>Analytics</h3>
+            <div class="spacer"><span class="hint" id="anaScope">Active checklist</span></div>
+          </div>
+          <div class="ana-grid">
+            <div class="ana-box">
+              <h4>Completion</h4>
+              <div class="ana-donut-row">
+                <div id="anaDonut"></div>
+                <div id="anaLegend" class="ana-legend"></div>
+              </div>
+            </div>
+            <div class="ana-box">
+              <h4>By checklist</h4>
+              <div id="anaLists"></div>
+            </div>
+            <div class="ana-box">
+              <h4>Last 7 days</h4>
+              <div class="week" id="anaWeek"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Recent activity -->
+        <section class="panel" aria-label="Recent activity">
+          <div class="panel-head">
+            <h3><i data-lucide="history"></i>Recent activity</h3>
+            <div class="spacer"><button class="btn sm ghost" id="recentViewAll">View all<i data-lucide="arrow-right" class="icon-16"></i></button></div>
+          </div>
+          <ul class="timeline" id="recentList"></ul>
+          <div class="empty hidden" id="recentEmpty" style="padding:28px 20px">
+            <div class="empty-ico"><i data-lucide="activity"></i></div>
+            <h3>No activity yet</h3>
+            <p>Complete an item to start the log.</p>
+          </div>
+        </section>
+      </div><!-- /view-overview -->
+
+      <div class="view hidden" id="view-checklist">
+        <div class="cl-bar panel">
+          <i data-lucide="clipboard-list"></i>
+          <select class="select cl-select" id="checklistSel" aria-label="Active checklist"></select>
+          <span class="hint" id="clMeta"></span>
+          <div class="cl-actions">
+            <button class="btn sm ghost" id="renameListBtn"><i data-lucide="pencil"></i>Rename</button>
+            <button class="btn sm ghost" id="importListBtn" title="Import checklist data (.txt or .csv)"><i data-lucide="upload"></i>Import Data</button>
+            <button class="btn sm primary" id="exportHtmlBtn"><i data-lucide="file-code"></i>Export HTML</button>
+            <button class="btn sm danger" id="deleteListBtn"><i data-lucide="trash-2"></i>Delete</button>
+          </div>
+          <input type="file" id="importFile" accept=".txt,.csv" class="hidden" />
+        </div>
+        <div class="desc-block" id="listDescBlock">
+          <span id="listDescText"></span>
+          <button class="link-btn" id="editListDescBtn">Edit details</button>
+        </div>
+        <!-- Checklist panel -->
+        <section class="panel" aria-label="Checklist">
+          <div class="toolbar">
+            <label class="searchbox" for="search">
+              <i data-lucide="search"></i>
+              <input id="search" type="search" placeholder="Filter items…  ( / )" autocomplete="off" />
+            </label>
+            <div class="seg" role="tablist" aria-label="Status filter">
+              <button data-filter="all" class="active">All <span class="count" id="countAll">0</span></button>
+              <button data-filter="active">Pending <span class="count" id="countActive">0</span></button>
+              <button data-filter="completed">Done <span class="count" id="countDone">0</span></button>
+            </div>
+            <select class="select" id="sortSel" aria-label="Sort order">
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="az">Name A–Z</option>
+              <option value="za">Name Z–A</option>
+              <option value="done">Done first</option>
+              <option value="pending">Pending first</option>
+            </select>
+            <button class="btn sm ghost" id="densityBtn"><i data-lucide="eye-off"></i><span>Compact</span></button>
+          </div>
+
+          <div class="list-head">
+            <input class="cbx" type="checkbox" id="selectAll" aria-label="Select all items" style="width:17px;height:17px;margin:0" />
+            <span id="countLabel">0 shown</span>
+            <span class="bulk">
+              <button class="btn sm primary" id="addBtn"><i data-lucide="plus"></i>Add Task</button>
+              <button class="btn sm ghost" id="uncheckAllBtn2"><i data-lucide="rotate-ccw"></i>Reset</button>
+            </span>
+          </div>
+
+          <ul class="checklist" id="checklist" aria-live="polite"></ul>
+
+          <div class="empty hidden" id="emptyState">
+            <div class="empty-ico"><i data-lucide="inbox"></i></div>
+            <h3 id="emptyTitle">No items match</h3>
+            <p id="emptySub">Adjust filters to continue.</p>
+            <div style="margin-top:14px;display:flex;gap:9px;justify-content:center">
+              <button class="btn sm primary" id="emptyAddBtn"><i data-lucide="plus"></i>Add Task</button>
+            </div>
+          </div>
+
+          <div class="pagination" id="pagination">
+            <div class="page-info" id="pageInfo" aria-live="polite">Showing 0 of 0</div>
+            <nav class="page-controls" id="pageControls" aria-label="Checklist pages">
+              <button class="page-btn" id="prevPage" aria-label="Previous page"><i data-lucide="chevron-left"></i></button>
+              <span class="page-numbers" id="pageNumbers"></span>
+              <button class="page-btn" id="nextPage" aria-label="Next page"><i data-lucide="chevron-right"></i></button>
+            </nav>
+            <label class="page-size">Rows
+              <select class="select" id="pageSizeSel" aria-label="Rows per page">
+                <option value="5">5 / page</option>
+                <option value="8">8 / page</option>
+                <option value="10">10 / page</option>
+                <option value="15">15 / page</option>
+                <option value="20">20 / page</option>
+                <option value="0">All</option>
+              </select>
+            </label>
+          </div>
+        </section>
+      </div><!-- /view-checklist -->
+
+      <div class="view hidden" id="view-activity">
+        <section class="panel" aria-label="Activity log">
+          <div class="panel-head">
+            <h3><i data-lucide="activity"></i>Activity log</h3>
+            <div class="spacer"><button class="btn sm ghost" id="clearActivityBtn"><i data-lucide="trash-2"></i>Clear log</button></div>
+          </div>
+          <ul class="timeline full" id="activityList"></ul>
+          <div class="pagination" id="actPagination">
+            <div class="page-info" id="actPageInfo" aria-live="polite"></div>
+            <nav class="page-controls" aria-label="Activity pages">
+              <button class="page-btn" id="actPrev" aria-label="Previous page"><i data-lucide="chevron-left"></i></button>
+              <span class="page-numbers" id="actPageNumbers"></span>
+              <button class="page-btn" id="actNext" aria-label="Next page"><i data-lucide="chevron-right"></i></button>
+            </nav>
+            <label class="page-size">Rows
+              <select class="select" id="actPageSizeSel" aria-label="Activity rows per page">
+                <option value="5">5 / page</option>
+                <option value="8">8 / page</option>
+                <option value="10">10 / page</option>
+                <option value="15">15 / page</option>
+                <option value="20">20 / page</option>
+                <option value="0">All</option>
+              </select>
+            </label>
+          </div>
+          <div class="empty hidden" id="activityEmpty" style="padding:36px 20px">
+            <div class="empty-ico"><i data-lucide="activity"></i></div>
+            <h3>No activity yet</h3>
+            <p>Complete, add or export items and the history lands here.</p>
+          </div>
+        </section>
+      </div><!-- /view-activity -->
+
+      <div class="view hidden" id="view-settings">
+        <div class="set-grid">
+          <section class="panel panel-pad" aria-label="Appearance settings">
+            <h3 class="set-title"><i data-lucide="sun"></i>Appearance</h3>
+            <label class="f-label">Theme</label>
+            <div class="seg" id="setThemeSeg">
+              <button data-settheme="light">Light</button>
+              <button data-settheme="dark">Dark</button>
+            </div>
+            <label class="f-label">List density</label>
+            <div class="seg" id="setDensitySeg">
+              <button data-setdensity="comfortable">Comfortable</button>
+              <button data-setdensity="compact">Compact</button>
+            </div>
+          </section>
+
+          <section class="panel panel-pad" aria-label="List defaults">
+            <h3 class="set-title"><i data-lucide="sliders-horizontal"></i>List defaults</h3>
+            <label class="f-label" for="setSortSel">Sort order</label>
+            <select class="select" id="setSortSel">
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="az">Name A–Z</option>
+              <option value="za">Name Z–A</option>
+              <option value="done">Done first</option>
+              <option value="pending">Pending first</option>
+            </select>
+            <label class="f-label" for="setPageSizeSel">Rows per page</label>
+            <select class="select" id="setPageSizeSel">
+              <option value="5">5 / page</option>
+              <option value="8">8 / page</option>
+              <option value="10">10 / page</option>
+              <option value="15">15 / page</option>
+              <option value="20">20 / page</option>
+              <option value="0">All</option>
+            </select>
+            <p class="hint">Changing these updates the checklist immediately.</p>
+          </section>
+
+          <section class="panel panel-pad" aria-label="Data and storage">
+            <h3 class="set-title"><i data-lucide="database"></i>Data &amp; storage</h3>
+            <ul class="usage">
+              <li><span>Checklists</span><b class="mono" id="useLists">–</b></li>
+              <li><span>Progress state</span><b class="mono" id="useStatus">–</b></li>
+              <li><span>Activity log</span><b class="mono" id="useActivity">–</b></li>
+              <li class="total"><span>Total local</span><b class="mono" id="useTotal">–</b></li>
+            </ul>
+            <div class="set-btns">
+              <button class="btn sm" id="setExportBtn"><i data-lucide="download"></i>Export .txt</button>
+              <button class="btn sm" id="setCopyBtn"><i data-lucide="copy"></i>Copy</button>
+            </div>
+            <div class="set-btns">
+              <button class="btn sm" id="backupBtn"><i data-lucide="database"></i>Backup data</button>
+              <button class="btn sm" id="restoreBtn"><i data-lucide="upload"></i>Restore backup</button>
+            </div>
+            <input type="file" id="restoreFile" accept=".json,application/json" class="hidden" />
+            <p class="hint">Backup downloads every list, progress, tags, activity and preferences as one JSON file. Restore replaces all local data.</p>
+            <div class="set-btns">
+              <button class="btn sm danger" id="setClearStatusBtn"><i data-lucide="rotate-ccw"></i>Reset progress</button>
+              <button class="btn sm danger" id="setDeleteListBtn"><i data-lucide="trash-2"></i>Delete checklist</button>
+            </div>
+          </section>
+
+          <section class="panel panel-pad" aria-label="About">
+            <h3 class="set-title"><i data-lucide="info"></i>About</h3>
+            <ul class="usage">
+              <li><span>Version</span><b class="mono" data-version>v2.0.0</b></li>
+              <li><span>Sample data</span><b class="mono">assets/data/checklist-items.txt</b></li>
+              <li><span>Export format</span><b class="mono">todo_checklist</b></li>
+            </ul>
+            <p class="hint">Local-first: everything lives in this browser's localStorage. No account, no network calls except loading the seed file.</p>
+          </section>
+        </div>
+      </div><!-- /view-settings -->
+
+        <footer class="page-foot">
+          <span><b id="countLabel2"></b><span id="storageKey" class="mono">localStorage["checklist-state-v1"]</span></span>
+          <span class="dot"></span>
+          <span>Sample data: <code>assets/data/checklist-items.txt</code></span>
+          <span class="dot"></span>
+          <span>Export format matches <code>todo_checklist</code></span>
+          <span class="dot"></span>
+          <span>Press <kbd>/</kbd> to search · <kbd>[</kbd> sidebar · <kbd>Esc</kbd> to close</span>
+          <span class="dot"></span>
+          <span data-version>v2.0.0</span>
+        </footer>
+      </main>
+    </div>
+  </div>
+
+  <!-- Add modal -->
+  <div class="modal-back" id="addModal" role="dialog" aria-modal="true" aria-labelledby="addTitle">
+    <div class="modal">
+      <div class="modal-head">
+        <h3><i data-lucide="plus"></i><span id="addTitle">Add Task</span></h3>
+      </div>
+      <form id="addForm">
+        <div class="modal-body">
+          <p style="font-size:13px;color:var(--fg-muted);margin-bottom:12px" id="addHint">New items are saved in this browser and included in exports.</p>
+          <label class="f-label" for="newItemInput">Item title <span class="req" aria-hidden="true">*</span></label>
+          <input class="text-input" id="newItemInput" type="text" placeholder="e.g. Book flights for the offsite" maxlength="200" aria-describedby="newItemError" />
+          <div class="field-error hidden" id="newItemError" role="alert"></div>
+          <label class="f-label" for="itemTagsInput">Tags <span class="hint" style="font-weight:400">(optional — comma separated, shown after the title)</span></label>
+          <input class="text-input" id="itemTagsInput" type="text" placeholder="e.g. urgent, backend, v2" maxlength="200" autocomplete="off" />
+          <label class="f-label" for="itemDescInput">Description <span class="hint" style="font-weight:400">(optional — supports ```code``` blocks)</span></label>
+          <textarea class="text-input code-input" id="itemDescInput" rows="3" maxlength="2000" placeholder="Add details, links, acceptance criteria…&#10;&#10;```js&#10;npm run deploy&#10;```"></textarea>
+          <div class="desc-preview-bar">
+            <button type="button" class="link-btn" id="descPreviewToggle" aria-expanded="false">Preview description</button>
+            <span class="hint">Use ```lang … ``` for code, `inline` for snippets.</span>
+          </div>
+          <div class="desc-preview hidden" id="descPreview" aria-live="polite"></div>
+          <div id="hasSubsWrap">
+            <label class="has-subs">
+              <input type="checkbox" id="hasSubsChk" class="cbx" />
+              <span>This task has subtask(s)</span>
+            </label>
+          </div>
+          <div id="subsCreateWrap" class="hidden">
+            <label class="f-label">Subtasks <span class="hint" style="font-weight:400">(add one per line — click + for more)</span></label>
+            <div id="subsCreateList"></div>
+            <div class="field-error hidden" id="subsCreateError" role="alert"></div>
+            <button type="button" class="btn sm ghost" id="addSubFieldBtn"><i data-lucide="plus"></i>Add another subtask</button>
+          </div>
+          <div id="importTasksWrap">
+            <div class="import-divider"><span>or</span></div>
+            <button type="button" class="btn sm ghost block" id="importTasksBtn"><i data-lucide="upload"></i>Import tasks from .csv / .txt</button>
+            <input type="file" id="importTasksFile" accept=".csv,.txt" class="hidden" />
+            <div class="hint">TXT: one task per line (indent for subtasks, trailing <span class="mono">#tags</span>). CSV: <span class="mono">title,tags,description</span> — tags separated by <span class="mono">;</span>.</div>
+            <div class="sample-links"><span class="sample-label">Try a sample:</span><a class="sample-link" href="assets/data/sample-tasks.csv" download><i data-lucide="file-text"></i>sample-tasks.csv</a><a class="sample-link" href="assets/data/sample-tasks.txt" download><i data-lucide="file-text"></i>sample-tasks.txt</a></div>
+          </div>
+          <div class="hint">Newest items appear first when sorting by Newest first. Parent tasks stay independent — checking a subtask never auto-checks its parent.</div>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn ghost" data-close="addModal">Cancel</button>
+          <button type="submit" class="btn primary" id="addConfirmBtn"><i data-lucide="plus"></i>Add Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Clear modal -->
+  <div class="modal-back" id="clearModal" role="dialog" aria-modal="true" aria-labelledby="clearTitle">
+    <div class="modal">
+      <div class="modal-head"><h3><i data-lucide="triangle-alert"></i><span id="clearTitle">Clear local data?</span></h3></div>
+      <div class="modal-body">
+        <p style="font-size:13.5px;color:var(--fg-muted)" id="clearModalDesc">This resets progress in this browser. Items are untouched — you can start over.</p>
+      </div>
+      <div class="modal-foot">
+        <button class="btn ghost" data-close="clearModal">Keep data</button>
+        <button class="btn danger" id="confirmClear"><i data-lucide="trash-2"></i>Clear data</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create / rename checklist modal -->
+  <div class="modal-back" id="checklistModal" role="dialog" aria-modal="true" aria-labelledby="checklistModalTitle">
+    <div class="modal">
+      <div class="modal-head"><h3><i data-lucide="clipboard-list"></i><span id="checklistModalTitle">New checklist</span></h3></div>
+      <form id="checklistForm">
+        <div class="modal-body">
+          <label class="f-label" for="checklistNameInput">Checklist name <span class="req" aria-hidden="true">*</span></label>
+          <input class="text-input" id="checklistNameInput" type="text" placeholder="e.g. Weekend trip packing" maxlength="80" aria-describedby="checklistNameError" />
+          <div class="field-error hidden" id="checklistNameError" role="alert"></div>
+          <label class="f-label" for="checklistDescInput">Description <span class="hint" style="font-weight:400">(optional)</span></label>
+          <textarea class="text-input" id="checklistDescInput" rows="3" maxlength="500" placeholder="What is this checklist for?"></textarea>
+          <div class="hint" id="checklistModalHint">A new, empty checklist is created and selected.</div>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn ghost" data-close="checklistModal">Cancel</button>
+          <button type="submit" class="btn primary" id="checklistModalConfirm"><i data-lucide="plus"></i>Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Restore backup modal -->
+  <div class="modal-back" id="restoreModal" role="dialog" aria-modal="true" aria-labelledby="restoreTitle">
+    <div class="modal">
+      <div class="modal-head"><h3><i data-lucide="upload"></i><span id="restoreTitle">Restore backup?</span></h3></div>
+      <div class="modal-body">
+        <p style="font-size:13.5px;color:var(--fg-muted)" id="restoreDesc">This replaces all local data with the backup file.</p>
+      </div>
+      <div class="modal-foot">
+        <button class="btn ghost" data-close="restoreModal">Keep my data</button>
+        <button class="btn primary" id="confirmRestore"><i data-lucide="upload"></i>Restore</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import checklist modal (drag & drop or browse) -->
+  <div class="modal-back" id="importModal" role="dialog" aria-modal="true" aria-labelledby="importModalTitle">
+    <div class="modal">
+      <div class="modal-head"><h3><i data-lucide="upload"></i><span id="importModalTitle">Import checklist</span></h3></div>
+      <div class="modal-body">
+        <div class="dropzone" id="importDropzone" role="button" tabindex="0" aria-label="Drop a file here or press Enter to browse">
+          <div class="dropzone-ico"><i data-lucide="file-up"></i></div>
+          <div class="dropzone-title">Drag &amp; drop a file here</div>
+          <div class="dropzone-sub">or</div>
+          <button type="button" class="btn sm primary" id="importBrowseBtn"><i data-lucide="folder-open"></i>Browse files</button>
+          <div class="hint">.txt or .csv only — auto-detected</div>
+        </div>
+        <div class="f-label" style="margin-top:14px">Import into</div>
+        <div class="seg" id="importDestSeg">
+          <button type="button" data-dest="new" class="active">New checklist</button>
+          <button type="button" data-dest="active">Active checklist</button>
+        </div>
+        <div class="hint" id="importSummary">No file selected yet.</div>
+        <div class="field-error hidden" id="importError" role="alert"></div>
+        <div class="hint">TXT: one task per line (indent for subtasks, trailing <span class="mono">#tags</span>). CSV: <span class="mono">title,tags,description</span>.</div>
+        <div class="sample-links"><span class="sample-label">Try a sample:</span><a class="sample-link" href="assets/data/sample-tasks.csv" download><i data-lucide="file-text"></i>sample-tasks.csv</a><a class="sample-link" href="assets/data/sample-tasks.txt" download><i data-lucide="file-text"></i>sample-tasks.txt</a></div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn ghost" data-close="importModal">Cancel</button>
+        <button type="button" class="btn primary" id="confirmImportBtn"><i data-lucide="plus"></i><span id="confirmImportLabel">Create checklist</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete checklist modal -->
+  <div class="modal-back" id="deleteListModal" role="dialog" aria-modal="true" aria-labelledby="deleteListTitle">
+    <div class="modal">
+      <div class="modal-head"><h3><i data-lucide="triangle-alert"></i><span id="deleteListTitle">Delete checklist?</span></h3></div>
+      <div class="modal-body">
+        <p style="font-size:13.5px;color:var(--fg-muted)" id="deleteListDesc">This removes the checklist and its progress from this browser.</p>
+      </div>
+      <div class="modal-foot">
+        <button class="btn ghost" data-close="deleteListModal">Keep it</button>
+        <button class="btn danger" id="confirmDeleteList"><i data-lucide="trash-2"></i>Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shortcuts modal -->
+  <div class="modal-back" id="shortcutsModal" role="dialog" aria-modal="true" aria-labelledby="shortcutsTitle">
+    <div class="modal">
+      <div class="modal-head"><h3><i data-lucide="keyboard"></i><span id="shortcutsTitle">Keyboard shortcuts</span></h3></div>
+      <div class="modal-body">
+        <ul class="kbd-list">
+          <li><span>Focus search</span><span><kbd>⌘K</kbd> <kbd>/</kbd></span></li>
+          <li><span>Toggle sidebar</span><span><kbd>[</kbd></span></li>
+          <li><span>Toggle focused row</span><span><kbd>Enter</kbd> <kbd>Space</kbd></span></li>
+          <li><span>Close dialogs / menus</span><span><kbd>Esc</kbd></span></li>
+        </ul>
+      </div>
+      <div class="modal-foot">
+        <button class="btn primary" data-close="shortcutsModal">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <button class="to-top" id="toTopBtn" aria-label="Back to top" title="Back to top"><i data-lucide="arrow-up"></i></button>
+
+  <script src="assets/js/vendor/lucide.min.js" defer></script>
+  <script src="assets/js/config.js" defer></script>
+  <script src="assets/js/store.js" defer></script>
+  <script src="assets/js/export-html.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+</body>
+</html>

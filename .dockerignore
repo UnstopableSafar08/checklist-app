@@ -1,0 +1,15 @@
+# Static-file image: only the runtime files are needed.
+.git
+.github/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+__pycache__/
+*.py[cod]
+node_modules/
+npm-debug.log*
+*.log
+*.tmp
+tests/
+coverage/
