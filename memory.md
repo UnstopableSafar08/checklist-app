@@ -148,7 +148,7 @@ No committed suite. Verification is ad-hoc per change, typically:
 - Standalone exports (`ChecklistExport.build`) deliberately omit sidebar,
   views, and multi-list UI; new items added inside them are title-only.
 - Sample seed (`FALLBACK_ITEMS` + both `checklist-items.txt` copies +
-  `todo-checklist-seed.json` + `import-via-console.js`) must stay in sync
+  `assets/data/todo-checklist-seed.json`) must stay in sync
   and generic (currently 12 neutral tasks).
 
 ## 7. Backlog (not started)
